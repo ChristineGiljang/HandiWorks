@@ -1,11 +1,11 @@
-import ChooseRole from "../components/forms/ChooseRole";
+import SignUpForm from "../components/forms/SignUpForm";
 import NavbarLogo from "../components/navbar/NavBarLogo";
 
 function SignUpPage() {
   return (
     <div>
       <NavbarLogo />
-      <ChooseRole />
+      <SignUpForm />
     </div>
   );
 }

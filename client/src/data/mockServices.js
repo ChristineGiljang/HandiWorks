@@ -1,0 +1,38 @@
+export const mockServices = [
+  {
+    id: 1,
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+    title: "House Cleaning Service",
+    rating: 4.8,
+    tags: ["Cleaning", "Fast", "Trusted"],
+    price: "$80",
+    isAvailable: true,
+  },
+  {
+    id: 2,
+    image: "https://randomuser.me/api/portraits/men/32.jpg",
+    title: "Plumbing Repair",
+    rating: 4.5,
+    tags: ["Emergency", "Expert"],
+    price: "$120",
+    isAvailable: false,
+  },
+  {
+    id: 3,
+    image: "https://randomuser.me/api/portraits/women/12.jpg",
+    title: "Dog Walking & Pet Care",
+    rating: 5,
+    tags: ["Pets", "Friendly"],
+    price: "$25/hr",
+    isAvailable: true,
+  },
+  {
+    id: 4,
+    image: "https://randomuser.me/api/portraits/men/5.jpg",
+    title: "Lawn Mowing",
+    rating: 4.2,
+    tags: ["Outdoor", "Equipment Included"],
+    price: "$60",
+    isAvailable: true,
+  },
+];
