@@ -8,12 +8,14 @@ import ServiceCard from "./components/cards/ServiceCard";
 import ServiceList from "./layout/ServiceList";
 import SignUpPage from "./pages/SignUpPage";
 import BusinessForm from "./components/forms/BusinessForm";
+import WhyJoin from "./components/sections/WhyJoin";
+import ProSignUpForm from "./components/forms/ProSignUpForm";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<ProSignUpForm />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
       </Routes>

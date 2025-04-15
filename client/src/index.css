@@ -4,26 +4,6 @@
 .input {
   @apply w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition;
 }
-@keyframes stripe {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 100% 0;
-  }
-}
-
-.striped-progress {
-  background: linear-gradient(
-    45deg,
-    #3b82f6 25%,
-    transparent 25%,
-    transparent 50%,
-    #3b82f6 50%,
-    #3b82f6 75%,
-    transparent 75%,
-    transparent
-  );
-  background-size: 40px 40px;
-  animation: stripe 1s linear infinite;
+html {
+  scroll-behavior: smooth;
 }

@@ -1,16 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import SearchBar from "../ui/SearchBar";
 
 const HeroSection = () => {
   return (
-    <section className=" h-screen flex items-center justify-center text-center">
-      <div className="max-w-screen-xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Find the Right Service, Right Near You
+    <section id="hero" className="h-screen flex justify-center items-center ">
+      {/* Optional: Add a subtle overlay if needed */}
+      <div className="absolute inset-0 bg-white opacity-5"></div>
+
+      <div className="relative z-10 mx-auto px-4 text-center">
+        <h1 className="text-4xl font-bold text-black mb-4">
+          Book Trusted Cleaners in Cebu – Instantly.
         </h1>
-        <p className="text-lg text-gray-600 mb-8">
-          Browse through a wide range of trusted service providers in your area
-          - we make it easy to connect with local experts to get the job done.
+        <p className="text-lg text-black mb-8">
+          HandiWorks connects you with local professionals you can trust — with
+          just 1 click.
         </p>
 
         <SearchBar />
