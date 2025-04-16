@@ -2,18 +2,19 @@ import React, { useState } from "react";
 import Avatar from "./Avatar";
 import Dropdown from "./Dropdown";
 import Button from "../ui/Button";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login status
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
-
-  // Example: User's initials and image URL (replace with actual user data)
-  const userInitials = "BG";
-  const userImage = "/docs/images/people/profile-picture-3.jpg"; // Replace with actual image URL
+  const handleSignupClick = () => {
+    navigate("/signup/pro");
+  };
 
   return (
     <nav className="bg-white border-gray-200 dark:bg-gray-900 fixed w-full z-50 top-0 left-0 shadow-md">
@@ -93,7 +94,7 @@ const Navbar = () => {
             <Button
               variant="filledStyles"
               text="Join as a Cleaner"
-              href="/signup"
+              onClick={handleSignupClick}
             ></Button>
           )}
         </div>

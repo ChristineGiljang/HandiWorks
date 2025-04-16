@@ -6,7 +6,8 @@ const Button = ({
   variant = "outline",
   onClick,
   className = "",
-  href, // new prop
+  href,
+  type = "button",
 }) => {
   const baseStyles =
     "focus:outline-none font-medium rounded-lg text-sm px-5 py-2 me-2 transition duration-200";
@@ -30,7 +31,7 @@ const Button = ({
 
   return (
     <button
-      type="button"
+      type={type}
       onClick={onClick}
       className={`${baseStyles} ${buttonStyles} ${className}`}
     >

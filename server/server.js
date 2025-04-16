@@ -3,8 +3,16 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
+const userRoutes = require("./routes/userRoutes");
+const User = require("./models/User");
+
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "*", // Temporary, remove later
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
@@ -25,5 +33,7 @@ mongoose
 app.get("/", (req, res) => {
   res.send("HandiWorks backend is running!");
 });
+
+app.use("/api/users", userRoutes);
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
