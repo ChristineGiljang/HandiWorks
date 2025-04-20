@@ -15,6 +15,9 @@ const Navbar = () => {
   const handleSignupClick = () => {
     navigate("/signup/pro");
   };
+  const handleLoginClick = () => {
+    navigate("/login");
+  };
 
   return (
     <nav className="bg-white border-gray-200 dark:bg-gray-900 fixed w-full z-50 top-0 left-0 shadow-md">
@@ -91,11 +94,19 @@ const Navbar = () => {
               />
             </>
           ) : (
-            <Button
-              variant="filledStyles"
-              text="Join as a Cleaner"
-              onClick={handleSignupClick}
-            ></Button>
+            <>
+              <a
+                onClick={handleLoginClick}
+                className="mr-4 block py-2 px-3 text-gray-900 cursor-pointer  hover:bg-gray-100 md:hover:bg-transparent md:border-0 hover:text-green-700 md:hover:text-green-700 md:p-0 dark:text-white md:dark:hover:text-green-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+              >
+                Login
+              </a>
+              <Button
+                variant="filledStyles"
+                text="Join as a Cleaner"
+                onClick={handleSignupClick}
+              />
+            </>
           )}
         </div>
       </div>

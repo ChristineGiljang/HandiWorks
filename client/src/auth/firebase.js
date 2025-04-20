@@ -1,15 +1,25 @@
+// firebase.js (or firebase-config.js)
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
+// Your Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyAG_ShCelji1WVrhXq-506Z3whWpMgo1SI",
-  authDomain: "handiworks-f630d.firebaseapp.com",
-  projectId: "handiworks-f630d",
-  storageBucket: "handiworks-f630d.appspot.com",
-  messagingSenderId: "27060755686",
-  appId: "1:27060755686:web:db08a620cad6881bf52f27",
+  apiKey: "AIzaSyD3HbZOD5E2XtTXvcNvZIvhuTGE2SIvotI",
+  authDomain: "handiworksbooking.firebaseapp.com",
+  projectId: "handiworksbooking",
+  storageBucket: "handiworksbooking.appspot.com",
+  messagingSenderId: "386894309703",
+  appId: "1:386894309703:web:acd27b9386ad9bdcec8462",
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+
+// Initialize Firebase services
+const db = getFirestore(app); // Firestore Database
+const auth = getAuth(app); // Firebase Authentication
+const storage = getStorage(app); // Firebase Storage
+
+export { db, auth, storage }; // Export for use in your app

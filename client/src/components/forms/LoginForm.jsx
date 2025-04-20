@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Button from "../ui/Button";
+import { handleGoogleLogin } from "../../utils/login";
 
-const ChooseRole = () => {
+const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -88,6 +89,26 @@ const ChooseRole = () => {
                 className="w-full py-3"
               />
 
+              <div className="flex items-center gap-2 my-4">
+                <div className="h-px flex-1 bg-gray-300" />
+                <span className="text-gray-500 text-sm font-medium">OR</span>
+                <div className="h-px flex-1 bg-gray-300" />
+              </div>
+
+              {/* Google Sign Up Button */}
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-medium py-2.5 rounded-lg hover:bg-gray-100 transition duration-200"
+              >
+                <img
+                  src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                  alt="Google Logo"
+                  className="w-5 h-5"
+                />
+                Login with Google
+              </button>
+
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                 Don’t have an account yet?{" "}
                 <a
@@ -105,4 +126,4 @@ const ChooseRole = () => {
   );
 };
 
-export default ChooseRole;
+export default LoginForm;
