@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { signUpWithEmail } from "../utils/signin";
 
 const useSignUp = () => {
   const [error, setError] = useState("");

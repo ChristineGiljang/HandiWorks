@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { db, storage } from "../auth/firebase"; // Import Firebase setup
+import { useState, useEffect, useRef } from "react";
+import { db, storage } from "../auth/firebase"; // Make sure firebase.js exports storage
 import { collection, addDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import NavBarLogo from "../components/navbar/NavBarLogo"; // Assuming you have a NavBarLogo component
 
 function CleanerForm() {
   const [form, setForm] = useState({
@@ -9,57 +10,75 @@ function CleanerForm() {
     email: "",
     phone: "",
     location: "",
-    service: "",
-    govID: null,
+    services: [],
   });
 
-  const [govIDPreview, setGovIDPreview] = useState(null); // For file preview
+  const [govIDFile, setGovIDFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef();
 
-  // Handle form input changes
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "govID") {
-      setForm((prev) => ({ ...prev, govID: files[0] }));
-
-      // If it's an image, show the preview
-      if (files[0] && files[0].type.startsWith("image")) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setGovIDPreview(reader.result); // Set the preview as base64 URL
-        };
-        reader.readAsDataURL(files[0]);
-      }
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
+  const serviceCategories = {
+    "Home Cleaning": [
+      "Studio Cleaning",
+      "1 Bedroom",
+      "2 Bedroom",
+      "3 Bedroom",
+      "Move-In / Move-Out Cleaning",
+      "General Deep Clean",
+      "Post-Renovation Cleaning",
+    ],
+    "Specialized Cleaning": [
+      "Sofa / Upholstery Cleaning",
+      "Mattress Cleaning",
+      "Carpet / Rug Cleaning",
+      "Grout & Tile Cleaning",
+      "Pet Hair & Odor Removal",
+    ],
+    "Short-Term Rental": [
+      "Airbnb Turnover",
+      "Guest-Ready Cleaning",
+      "Check-Out Clean",
+    ],
+    Commercial: ["Office Cleaning", "Retail Store Cleaning", "Event Cleanup"],
   };
 
-  // Handle form submission
+  const toggleService = (service) => {
+    setForm((prev) => {
+      const isSelected = prev.services.includes(service);
+      return {
+        ...prev,
+        services: isSelected
+          ? prev.services.filter((s) => s !== service)
+          : [...prev.services, service],
+      };
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Initialize the URL for the gov ID (empty by default)
       let govIDUrl = "";
-
-      // If a government ID is selected, upload it to Firebase Storage
-      if (form.govID) {
-        const idRef = ref(storage, `govIDs/${form.govID.name}`);
-        await uploadBytes(idRef, form.govID); // Upload the file
-        govIDUrl = await getDownloadURL(idRef); // Get the download URL for the uploaded file
+      if (govIDFile) {
+        const storageRef = ref(
+          storage,
+          `govIDs/${Date.now()}_${govIDFile.name}`
+        );
+        await uploadBytes(storageRef, govIDFile);
+        govIDUrl = await getDownloadURL(storageRef);
       }
 
-      // Save the form data to Firestore
       await addDoc(collection(db, "cleaners"), {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        location: form.location,
-        service: form.service,
-        govIDUrl, // Save the file URL in Firestore
+        ...form,
+        govIDUrl,
         createdAt: new Date(),
       });
 
@@ -69,111 +88,155 @@ function CleanerForm() {
         email: "",
         phone: "",
         location: "",
-        service: "",
-        govID: null,
+        services: [],
       });
-      setGovIDPreview(null); // Reset the preview after submission
+      setGovIDFile(null);
     } catch (error) {
       console.error("Error saving cleaner data:", error);
     } finally {
       setIsSubmitting(false);
+      setShowDropdown(false);
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow">
-      <h2 className="text-2xl font-bold mb-4 text-green-700">
-        Join as a Cleaner
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          value={form.name}
-          onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email Address"
-          value={form.email}
-          onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        />
-        <input
-          type="tel"
-          name="phone"
-          placeholder="Phone Number"
-          value={form.phone}
-          onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        />
-        <input
-          type="text"
-          name="location"
-          placeholder="Your Location"
-          value={form.location}
-          onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        />
-        <select
-          name="service"
-          value={form.service}
-          onChange={handleChange}
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        >
-          <option value="">Select Cleaning Type</option>
-          <option>Studio Cleaning</option>
-          <option>1 Bedroom</option>
-          <option>2 Bedroom</option>
-          <option>3 Bedroom</option>
-          <option>Move-in / Move-out Cleaning</option>
-          <option>General Deep Clean</option>
-          <option>Post-Renovation Cleaning</option>
-        </select>
-        <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">
-            Upload Government ID or Valid Photo
-          </label>
+    <>
+      <NavBarLogo />
+      <div className="max-w-xl mx-auto mt-12 bg-white p-8 rounded-2xl shadow">
+        <h2 className="text-2xl font-bold mb-4 text-gray-500  ">
+          Join as a Cleaner in HandiWorks
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            type="file"
-            name="govID"
-            accept="image/*,application/pdf"
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            value={form.name}
             onChange={handleChange}
-            className="w-full"
+            className="w-full border border-gray-300 rounded-lg p-2"
             required
           />
-        </div>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            value={form.email}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg p-2"
+            required
+          />
+          <input
+            type="tel"
+            name="phone"
+            placeholder="Phone Number"
+            value={form.phone}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg p-2"
+            required
+          />
+          <input
+            type="text"
+            name="location"
+            placeholder="Address / Location"
+            value={form.location}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg p-2"
+            required
+          />
 
-        {/* File Preview */}
-        {govIDPreview && (
-          <div className="mt-4">
-            <h3 className="text-sm font-medium text-gray-700">Preview:</h3>
-            <img
-              src={govIDPreview}
-              alt="Government ID Preview"
-              className="mt-2 w-full h-auto rounded-lg"
-            />
+          {/* Multi-select dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              className="w-full border border-gray-300 rounded-lg p-2 text-left bg-white"
+              onClick={() => setShowDropdown((prev) => !prev)}
+            >
+              {form.services.length > 0
+                ? form.services.join(", ")
+                : "Select Cleaning Services"}
+            </button>
+            {showDropdown && (
+              <div className="absolute z-10 bg-white border mt-1 w-full max-h-64 overflow-y-auto rounded-lg shadow-lg">
+                {Object.entries(serviceCategories).map(
+                  ([category, services]) => (
+                    <div key={category} className="p-3 border-b">
+                      <p className="text-sm font-semibold text-gray-600 mb-1">
+                        {category}
+                      </p>
+                      {services.map((service) => (
+                        <label
+                          key={service}
+                          className="flex items-center p-1 hover:bg-gray-50 cursor-pointer text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={form.services.includes(service)}
+                            onChange={() => toggleService(service)}
+                            className="mr-2"
+                          />
+                          {service}
+                        </label>
+                      ))}
+                    </div>
+                  )
+                )}
+              </div>
+            )}
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-green-600 text-white font-medium py-3 rounded-lg hover:bg-green-700 transition"
-        >
-          {isSubmitting ? "Submitting..." : "Submit Registration"}
-        </button>
-        {successMsg && <p className="text-green-600 mt-2">{successMsg}</p>}
-      </form>
-    </div>
+          {/* Gov ID upload */}
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">
+              Upload Valid Government ID (optional)
+            </label>
+            <input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setGovIDFile(file);
+              }}
+              className="w-full border border-gray-300 rounded-lg p-2"
+            />
+
+            {govIDFile && (
+              <div className="mt-2">
+                {govIDFile.type.startsWith("image/") ? (
+                  <img
+                    src={URL.createObjectURL(govIDFile)}
+                    alt="Gov ID Preview"
+                    className="max-h-48 border rounded-md"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-600">
+                    Selected file: {govIDFile.name}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-green-600 text-white font-medium py-3 rounded-lg hover:bg-green-700 transition"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Registration"}
+          </button>
+          {successMsg && <p className="text-green-600 mt-2">{successMsg}</p>}
+        </form>
+      </div>
+    </>
   );
 }
 

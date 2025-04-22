@@ -1,21 +1,35 @@
 import { useState } from "react";
 import Button from "../ui/Button";
-import { handleGoogleLogin } from "../../utils/login";
+import useGoogleLogin from "../../hooks/useGoogleLogin"; // 👈 adjust path if needed
+import { useNavigate } from "react-router-dom"; // optional if you want to redirect after login
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
+  const googleLogin = useGoogleLogin(); // ✅ your custom hook
+  const navigate = useNavigate(); // optional
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log({ email, password, remember });
+    // Add email/password login logic here if needed
+  };
+
+  const handleGoogleLogin = async () => {
+    const { user, error } = await googleLogin("client"); // 👈 optional userType
+    if (user) {
+      console.log("Logged in:", user);
+      navigate("/dashboard"); // or wherever you want to redirect
+    } else {
+      alert(error.message);
+    }
   };
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900">
       <div className="flex flex-col items-center pt-32 px-6 mx-auto md:h-screen">
-        <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+        <div className="w-full bg-white rounded-lg shadow dark:border sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
           <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
             <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
               <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white justify-center">
@@ -95,7 +109,6 @@ const LoginForm = () => {
                 <div className="h-px flex-1 bg-gray-300" />
               </div>
 
-              {/* Google Sign Up Button */}
               <button
                 type="button"
                 onClick={handleGoogleLogin}

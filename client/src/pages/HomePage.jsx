@@ -10,7 +10,6 @@ function HomePage() {
     <>
       <Navbar />
       <HeroSection />
-      <CategoriesSection />
       <HowItWorks />
       <ContactUs />
       <Footer />
