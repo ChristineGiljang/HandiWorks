@@ -1,53 +1,76 @@
-import React from "react";
+import React, { useState } from "react";
 
 const PersonalInformationForm = () => {
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    streetAddress: "",
+    city: "",
+    region: "",
+    postalCode: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setPersonalInfo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   return (
     <div>
       <h2 className="text-base font-semibold text-gray-900">
         Personal Information
       </h2>
       <p className="mt-1 text-sm text-gray-600">
-        Use a permanent address where you can receive mail.
+        This information will be used to contact you.
       </p>
 
       <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
         <div className="sm:col-span-3">
           <label
-            htmlFor="first-name"
+            htmlFor="firstName"
             className="block text-sm font-medium text-gray-900"
           >
             First name
           </label>
           <div className="mt-2">
             <input
-              id="first-name"
-              name="first-name"
+              id="firstName"
+              name="firstName"
+              value={personalInfo.firstName}
+              onChange={handleChange}
               type="text"
               autoComplete="given-name"
-              className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border-2 border-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
+              className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
             />
           </div>
         </div>
 
         <div className="sm:col-span-3">
           <label
-            htmlFor="last-name"
+            htmlFor="lastName"
             className="block text-sm font-medium text-gray-900"
           >
             Last name
           </label>
           <div className="mt-2">
             <input
-              id="last-name"
-              name="last-name"
+              id="lastName"
+              name="lastName"
+              value={personalInfo.lastName}
+              onChange={handleChange}
               type="text"
               autoComplete="family-name"
-              className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border-2 border-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
+              className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
             />
           </div>
         </div>
 
-        <div className="sm:col-span-4">
+        <div className="sm:col-span-3">
           <label
             htmlFor="email"
             className="block text-sm font-medium text-gray-900"
@@ -59,26 +82,50 @@ const PersonalInformationForm = () => {
               id="email"
               name="email"
               type="email"
+              value={personalInfo.email}
+              onChange={handleChange}
               autoComplete="email"
-              className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border-2 border-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
+              className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="sm:col-span-3">
+          <label
+            htmlFor="phone"
+            className="block text-sm font-medium text-gray-900"
+          >
+            Phone number
+          </label>
+          <div className="mt-2">
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              value={personalInfo.phone}
+              onChange={handleChange}
+              autoComplete="tel"
+              className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
             />
           </div>
         </div>
 
         <div className="col-span-full">
           <label
-            htmlFor="street-address"
+            htmlFor="streetAddress"
             className="block text-sm font-medium text-gray-900"
           >
             Street address
           </label>
           <div className="mt-2">
             <input
-              id="street-address"
-              name="street-address"
+              id="streetAddress"
+              name="streetAddress"
               type="text"
+              value={personalInfo.streetAddress}
+              onChange={handleChange}
               autoComplete="street-address"
-              className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border-2 border-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
+              className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
             />
           </div>
         </div>
@@ -95,8 +142,10 @@ const PersonalInformationForm = () => {
               id="city"
               name="city"
               type="text"
+              value={personalInfo.city}
+              onChange={handleChange}
               autoComplete="address-level2"
-              className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border-2 border-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
+              className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
             />
           </div>
         </div>
@@ -112,27 +161,31 @@ const PersonalInformationForm = () => {
             <input
               id="region"
               name="region"
+              value={personalInfo.region}
+              onChange={handleChange}
               type="text"
               autoComplete="address-level1"
-              className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border-2 border-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
+              className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
             />
           </div>
         </div>
 
         <div className="sm:col-span-2">
           <label
-            htmlFor="postal-code"
+            htmlFor="postalCode"
             className="block text-sm font-medium text-gray-900"
           >
             ZIP / Postal code
           </label>
           <div className="mt-2">
             <input
-              id="postal-code"
-              name="postal-code"
+              id="postalCode"
+              name="postalCode"
               type="text"
+              value={personalInfo.postalCode}
+              onChange={handleChange}
               autoComplete="postal-code"
-              className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border-2 border-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
+              className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
             />
           </div>
         </div>
