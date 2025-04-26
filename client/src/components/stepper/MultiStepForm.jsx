@@ -5,9 +5,34 @@ import NavBarLogo from "../navbar/NavBarLogo";
 import Button from "../ui/Button";
 import ServiceForm from "./ServiceForm";
 import PricingForm from "./PricingForm";
+import ReviewSection from "./ReviewSection";
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    streetAddress: "",
+    city: "",
+    region: "",
+    postalCode: "",
+  });
+
+  const [formData, setFormData] = useState({
+    businessName: "",
+    description: "",
+    numCleaners: "",
+    yearsOfService: "",
+    businessPhoto: null,
+    workPhotos: [],
+  });
+
+  const [pricingData, setPricingData] = useState({
+    mainServices: [],
+    addOns: [],
+  });
 
   return (
     <>
@@ -16,9 +41,22 @@ const MultiStepForm = () => {
         <StepProgress currentStep={step} />
 
         <div className="mt-8">
-          {step === 1 && <PersonalInformationForm />}
-          {step === 2 && <ServiceForm />}
+          {step === 1 && (
+            <PersonalInformationForm
+              personalInfo={personalInfo}
+              setPersonalInfo={setPersonalInfo}
+            />
+          )}
+          {step === 2 && (
+            <ServiceForm formData={formData} setFormData={setFormData} />
+          )}
           {step === 3 && <PricingForm />}
+          {step === 4 && (
+            <ReviewSection
+              personalInfo={personalInfo}
+              businessInfo={formData}
+            />
+          )}
         </div>
 
         <div className="flex justify-between mt-10">

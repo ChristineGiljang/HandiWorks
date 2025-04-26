@@ -1,23 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 
-const PersonalInformationForm = () => {
-  const [personalInfo, setPersonalInfo] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    streetAddress: "",
-    city: "",
-    region: "",
-    postalCode: "",
-  });
+const PersonalInformationForm = ({ personalInfo, setPersonalInfo }) => {
+  console.log(typeof setPersonalInfo);
 
+  console.log(personalInfo); // Log the personal info object
+  console.log(setPersonalInfo);
+  // Handle the change of each input field
   const handleChange = (e) => {
     const { name, value } = e.target;
     setPersonalInfo((prev) => ({
       ...prev,
       [name]: value,
     }));
+  };
+
+  // Optional: Add form validation (e.g., ensuring email is valid)
+  const isFormValid = () => {
+    return Object.values(personalInfo).every((field) => field !== "");
   };
 
   return (
@@ -41,7 +40,7 @@ const PersonalInformationForm = () => {
             <input
               id="firstName"
               name="firstName"
-              value={personalInfo.firstName}
+              value={personalInfo.firstName || ""}
               onChange={handleChange}
               type="text"
               autoComplete="given-name"
@@ -61,7 +60,7 @@ const PersonalInformationForm = () => {
             <input
               id="lastName"
               name="lastName"
-              value={personalInfo.lastName}
+              value={personalInfo.lastName || ""}
               onChange={handleChange}
               type="text"
               autoComplete="family-name"
@@ -82,7 +81,7 @@ const PersonalInformationForm = () => {
               id="email"
               name="email"
               type="email"
-              value={personalInfo.email}
+              value={personalInfo.email || ""}
               onChange={handleChange}
               autoComplete="email"
               className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
@@ -102,7 +101,7 @@ const PersonalInformationForm = () => {
               id="phone"
               name="phone"
               type="tel"
-              value={personalInfo.phone}
+              value={personalInfo.phone || ""}
               onChange={handleChange}
               autoComplete="tel"
               className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
@@ -122,7 +121,7 @@ const PersonalInformationForm = () => {
               id="streetAddress"
               name="streetAddress"
               type="text"
-              value={personalInfo.streetAddress}
+              value={personalInfo.streetAddress || ""}
               onChange={handleChange}
               autoComplete="street-address"
               className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
@@ -142,7 +141,7 @@ const PersonalInformationForm = () => {
               id="city"
               name="city"
               type="text"
-              value={personalInfo.city}
+              value={personalInfo.city || ""}
               onChange={handleChange}
               autoComplete="address-level2"
               className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
@@ -161,7 +160,7 @@ const PersonalInformationForm = () => {
             <input
               id="region"
               name="region"
-              value={personalInfo.region}
+              value={personalInfo.region || ""}
               onChange={handleChange}
               type="text"
               autoComplete="address-level1"
@@ -182,7 +181,7 @@ const PersonalInformationForm = () => {
               id="postalCode"
               name="postalCode"
               type="text"
-              value={personalInfo.postalCode}
+              value={personalInfo.postalCode || ""}
               onChange={handleChange}
               autoComplete="postal-code"
               className="block w-full rounded-md border-2 border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm"
@@ -190,6 +189,11 @@ const PersonalInformationForm = () => {
           </div>
         </div>
       </div>
+
+      {/* Optional: Display a message when the form is valid */}
+      {isFormValid() && (
+        <p className="mt-4 text-sm text-green-600">Form is ready to submit!</p>
+      )}
     </div>
   );
 };

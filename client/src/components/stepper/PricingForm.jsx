@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const mainServiceTypes = ["General Cleaning", "Deep Cleaning"];
 const addOnServices = [
@@ -10,17 +10,22 @@ const addOnServices = [
   "Fridge Cleaning",
 ];
 
-const PricingForm = ({
-  mainServices = [],
-  setMainServices = () => {},
-  addOns = [],
-  setAddOns = () => {},
+const CleanerPricingForm = ({
+  initialMainServices = [],
+  initialAddOns = [],
+  onSave,
 }) => {
+  const [mainServices, setMainServices] = useState(initialMainServices);
+  const [addOns, setAddOns] = useState(initialAddOns);
+
   const toggleService = (service, list, setList) => {
-    const exists = list.find((s) => s.name === service);
+    const exists = list.some((s) => s.name === service);
+
     if (exists) {
+      // Deselect the service
       setList((prev) => prev.filter((s) => s.name !== service));
     } else {
+      // Select the service and add it to the list
       setList((prev) => [...prev, { name: service, price: "" }]);
     }
   };
@@ -33,24 +38,21 @@ const PricingForm = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (mainServices.some((s) => !s.price) || addOns.some((s) => !s.price)) {
-      alert("Please set prices for all selected services.");
-      return;
-    }
-    console.log("✅ Main Services:", mainServices);
-    console.log("✅ Add-ons:", addOns);
+    // Pass the updated services to the parent
+    onSave({ mainServices, addOns });
   };
 
+  useEffect(() => {
+    setMainServices(initialMainServices);
+    setAddOns(initialAddOns);
+  }, []);
   return (
-    <div className="max-w-xl p-6 bg-white shadow rounded-lg">
-      <h2 className="text-xl font-semibold text-gray-800">
+    <div className="max-w-xl mx-auto p-6 bg-white rounded-md shadow-md">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">
         Set Your Service Pricing
       </h2>
-      <p className="mt-1 text-sm text-gray-600">
-        Select the services you offer and specify your pricing.
-      </p>
 
-      <form onSubmit={handleSubmit} className="space-y-8 mt-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* MAIN SERVICES */}
         <div>
           <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -62,10 +64,10 @@ const PricingForm = ({
               return (
                 <label
                   key={service}
-                  className={`cursor-pointer px-4 py-2 border rounded-md text-sm transition ${
+                  className={`cursor-pointer px-4 py-2 border rounded-md text-sm ${
                     isSelected
-                      ? "bg-green-50 border-green-500 text-green-700"
-                      : "bg-white border-gray-300 hover:border-gray-400"
+                      ? "bg-green-50 border-green-500"
+                      : "bg-white border-gray-300"
                   }`}
                 >
                   <input
@@ -98,8 +100,10 @@ const PricingForm = ({
                         setMainServices
                       )
                     }
-                    placeholder="₱"
+                    placeholder="₱ Price"
                     className="w-full p-2 border rounded-md"
+                    min="0"
+                    step="0.01"
                   />
                 </div>
               ))}
@@ -107,7 +111,7 @@ const PricingForm = ({
           )}
         </div>
 
-        {/* ADD-ONS */}
+        {/* ADD-ON SERVICES */}
         <div>
           <label className="text-sm font-medium text-gray-700 block mb-2">
             Add-ons
@@ -118,10 +122,10 @@ const PricingForm = ({
               return (
                 <label
                   key={service}
-                  className={`cursor-pointer px-4 py-2 border rounded-md text-sm transition ${
+                  className={`cursor-pointer px-4 py-2 border rounded-md text-sm ${
                     isSelected
-                      ? "bg-green-50 border-green-500 text-green-700"
-                      : "bg-white border-gray-300 hover:border-gray-400"
+                      ? "bg-green-50 border-green-500"
+                      : "bg-white border-gray-300"
                   }`}
                 >
                   <input
@@ -152,8 +156,10 @@ const PricingForm = ({
                         setAddOns
                       )
                     }
-                    placeholder="₱"
+                    placeholder="₱ Price"
                     className="w-full p-2 border rounded-md"
+                    min="0"
+                    step="0.01"
                   />
                 </div>
               ))}
@@ -161,18 +167,15 @@ const PricingForm = ({
           )}
         </div>
 
-        {/* SUBMIT BUTTON */}
-        <div className="pt-4">
-          <button
-            type="submit"
-            className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-          >
-            Save Pricing
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="w-full mt-4 bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+        >
+          Save Prices
+        </button>
       </form>
     </div>
   );
 };
 
-export default PricingForm;
+export default CleanerPricingForm;
