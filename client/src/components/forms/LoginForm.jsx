@@ -1,7 +1,9 @@
 import { useState } from "react";
 import Button from "../ui/Button";
-import useGoogleLogin from "../../hooks/useGoogleLogin"; // 👈 adjust path if needed
-import { useNavigate } from "react-router-dom"; // optional if you want to redirect after login
+import useGoogleLogin from "../../hooks/useGoogleLogin";
+import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth"; // 👈 import this
+import { auth } from "../../auth/firebase";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -10,17 +12,28 @@ const LoginForm = () => {
   const googleLogin = useGoogleLogin(); // ✅ your custom hook
   const navigate = useNavigate(); // optional
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password, remember });
-    // Add email/password login logic here if needed
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log("Logged in:", userCredential.user);
+      navigate("/pro");
+    } catch (error) {
+      console.error("Login failed:", error.message);
+      alert("Login failed: " + error.message);
+    }
   };
 
   const handleGoogleLogin = async () => {
     const { user, error } = await googleLogin("client"); // 👈 optional userType
     if (user) {
       console.log("Logged in:", user);
-      navigate("/dashboard"); // or wherever you want to redirect
+      navigate("/pro"); // or wherever you want to redirect
     } else {
       alert(error.message);
     }

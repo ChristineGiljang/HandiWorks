@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {/* Brand */}
         <div>
-          <h3 className="text-2xl font-bold text-gray-600 mb-2">HandiWorks</h3>
+          <h3 className="text-2xl font-bold text-gray-600 mb-2">Handiworks</h3>
           <p className="text-sm text-gray-600">
             Trusted cleaning services in Cebu, just a few clicks away.
           </p>
@@ -86,7 +86,7 @@ const Footer = () => {
 
       {/* Bottom */}
       <div className="mt-10 border-t border-gray-200 pt-4 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} HandiWorks. All rights reserved.
+        © {new Date().getFullYear()} Handiworks. All rights reserved.
       </div>
     </footer>
   );

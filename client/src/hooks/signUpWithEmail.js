@@ -1,5 +1,3 @@
-// src/firebase/auth/signUpWithEmail.js
-
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../auth/firebase";
 import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore";

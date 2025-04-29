@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyAZ_xmTYFsL56F6ysj32RIAvSEiz5Gkwo8",
   authDomain: "handiworks-f3a84.firebaseapp.com",
   projectId: "handiworks-f3a84",
-  storageBucket: "handiworks-f3a84.firebasestorage.app",
+  storageBucket: "handiworks-f3a84.appspot.com",
   messagingSenderId: "328307279846",
   appId: "1:328307279846:web:b3f7078447b5934fb1b827",
 };

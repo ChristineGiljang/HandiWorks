@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import Button from "../ui/Button";
-import signUpWithEmail from "../../hooks/signUpWithEmail"; // Import the signUpWithEmail function
+import signUpWithEmail from "../../hooks/signUpWithEmail";
 import { useLocation } from "react-router-dom";
-import useGoogleLogin from "../../hooks/useGoogleLogin"; // Assuming you have a custom Google login hook
+import useGoogleLogin from "../../hooks/useGoogleLogin";
+import { auth, db } from "../../auth/firebase"; // Adjust the path as needed
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 const SignUpForm = (props) => {
   const { userType = "client" } = props;
@@ -11,24 +14,40 @@ const SignUpForm = (props) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const location = useLocation();
   const locationUserType = location.state?.userType;
   const finalUserType = locationUserType || userType;
 
-  // Use the custom Google login hook
   const googleLogin = useGoogleLogin();
 
   const handleGoogleSignUp = async () => {
     console.log("User type from form:", userType);
-    const { user, error } = await googleLogin(); // Call the Google login function
+
+    const { user, error } = await googleLogin();
 
     if (user) {
-      // Handle any actions after successful login here, like redirecting to dashboard
       console.log("User logged in with Google:", user);
+
+      try {
+        const userRef = doc(db, "users", user.uid);
+
+        await setDoc(userRef, {
+          email: user.email,
+          displayName: user.displayName,
+          userType: userType,
+          createdAt: serverTimestamp(),
+        });
+
+        console.log("User type saved:", userType);
+        navigate("/pro");
+      } catch (err) {
+        setError("Error saving user data: " + err.message);
+        console.error("Error saving user data:", err.message);
+      }
     } else {
-      // Handle any error if login fails
-      if (error.code === "auth/account-exists-with-different-credential") {
+      if (error?.code === "auth/account-exists-with-different-credential") {
         setError(
           "This email is already associated with a different account. Please use the email/password login method."
         );
@@ -38,7 +57,6 @@ const SignUpForm = (props) => {
       console.error("Google login error:", error.message);
     }
   };
-
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
@@ -53,7 +71,7 @@ const SignUpForm = (props) => {
       const user = await signUpWithEmail(email, password, finalUserType);
       if (user) {
         console.log("User signed up successfully:", user);
-        // Redirect or update UI after successful sign-up
+        navigate("/pro");
       }
     } catch (err) {
       // Handle Firebase error codes and set custom error messages

@@ -10,7 +10,7 @@ const addOnServices = [
   "Fridge Cleaning",
 ];
 
-const CleanerPricingForm = ({
+const PricingForm = ({
   initialMainServices = [],
   initialAddOns = [],
   onSave,
@@ -38,10 +38,12 @@ const CleanerPricingForm = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Pass the updated services to the parent
-    onSave({ mainServices, addOns });
+    if (typeof onSave === "function") {
+      onSave({ mainServices, addOns });
+    } else {
+      console.error("onSave is not a function");
+    }
   };
-
   useEffect(() => {
     setMainServices(initialMainServices);
     setAddOns(initialAddOns);
@@ -178,4 +180,4 @@ const CleanerPricingForm = ({
   );
 };
 
-export default CleanerPricingForm;
+export default PricingForm;

@@ -10,23 +10,33 @@ export default function ServiceCard({
   isAvailable,
   onBook,
   onChat,
+  businessName,
+  businessPhoto,
 }) {
+  console.log("businessName:", businessName);
+  console.log("businessPhoto:", businessPhoto);
+
   return (
     <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between w-full p-4 bg-white rounded-2xl shadow-sm border hover:shadow-md hover:scale-[1.01] cursor-pointer transition-all duration-200">
       {/* Left side */}
       <div className="flex items-center sm:items-start justify-between gap-4 w-full sm:w-auto">
-        {/* Image */}
+        {/* Business Photo */}
         <img
-          src={image}
-          alt="profile"
+          src={businessPhoto || "/default-business-photo.jpg"}
+          alt="business"
           className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover"
         />
 
-        {/* Title, Rating, Tags */}
+        {/* Title, Business Name, Rating, Tags */}
         <div className="flex flex-col flex-1">
           <h3 className="font-semibold text-base sm:text-lg text-left">
             {title}
           </h3>
+
+          {/* Business Name */}
+          <div className="text-sm font-medium text-gray-600">
+            {businessName}
+          </div>
 
           <div className="flex justify-start">
             <StarRating rating={rating} />

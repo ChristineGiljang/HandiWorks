@@ -11,18 +11,24 @@ const ServiceForm = ({ formData, setFormData }) => {
     if (file) {
       setFormData((prev) => ({
         ...prev,
-        businessPhoto: URL.createObjectURL(file),
+        businessPhoto: file, // Save the File
+        businessPhotoPreview: URL.createObjectURL(file), // Separate preview
       }));
     }
   };
 
   const handleWorkPhotosChange = (e) => {
     const files = Array.from(e.target.files);
-    const newPreviews = files.map((file) => URL.createObjectURL(file));
-    setFormData((prev) => ({
-      ...prev,
-      workPhotos: [...(prev.workPhotos || []), ...newPreviews],
-    }));
+    if (files.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        workPhotos: [...(prev.workPhotos || []), ...files], // Save Files
+        workPhotosPreviews: [
+          ...(prev.workPhotosPreviews || []),
+          ...files.map((file) => URL.createObjectURL(file)),
+        ],
+      }));
+    }
   };
 
   return (
@@ -128,9 +134,9 @@ const ServiceForm = ({ formData, setFormData }) => {
           </label>
           <div className="flex items-center gap-4">
             <div className="w-28 h-24 rounded-full bg-gray-100 overflow-hidden border border-gray-300">
-              {formData.businessPhoto ? (
+              {formData.businessPhotoPreview ? (
                 <img
-                  src={formData.businessPhoto}
+                  src={formData.businessPhotoPreview}
                   alt="Business"
                   className="w-full h-full object-cover"
                 />
@@ -171,7 +177,7 @@ const ServiceForm = ({ formData, setFormData }) => {
             />
           </div>
           <div className="mt-4 grid grid-cols-4 gap-2">
-            {(formData.workPhotos || []).map((src, index) => (
+            {(formData.workPhotosPreviews || []).map((src, index) => (
               <div
                 key={index}
                 className="w-24 h-24 rounded-md bg-gray-100 overflow-hidden border border-gray-300"
