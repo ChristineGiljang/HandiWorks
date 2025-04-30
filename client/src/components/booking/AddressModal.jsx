@@ -5,14 +5,13 @@ const AddressModal = ({ isOpen, onClose, onSubmit }) => {
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
-  const [region, setRegion] = useState("");
 
   const navigate = useNavigate();
 
   const handleSubmit = () => {
-    if (!street || !city || !postalCode || !region) return;
+    if (!street || !city || !postalCode) return;
 
-    const address = { street, city, postalCode, region };
+    const address = { street, city, postalCode };
     onSubmit(address);
 
     localStorage.setItem("userAddress", JSON.stringify(address)); // save to localStorage
@@ -31,14 +30,14 @@ const AddressModal = ({ isOpen, onClose, onSubmit }) => {
           <input
             className="w-full border px-4 py-2 rounded"
             type="text"
-            placeholder="Street Address"
+            placeholder="Street Address / Barangay"
             value={street}
             onChange={(e) => setStreet(e.target.value)}
           />
           <input
             className="w-full border px-4 py-2 rounded"
             type="text"
-            placeholder="City"
+            placeholder="City / Municipality"
             value={city}
             onChange={(e) => setCity(e.target.value)}
           />
@@ -48,13 +47,6 @@ const AddressModal = ({ isOpen, onClose, onSubmit }) => {
             placeholder="Postal Code"
             value={postalCode}
             onChange={(e) => setPostalCode(e.target.value)}
-          />
-          <input
-            className="w-full border px-4 py-2 rounded"
-            type="text"
-            placeholder="Region"
-            value={region}
-            onChange={(e) => setRegion(e.target.value)}
           />
         </div>
         <div className="flex justify-end gap-3 mt-6">

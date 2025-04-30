@@ -25,16 +25,25 @@ export default function ServiceList({ userAddress }) {
 
         let filteredServices = allServices;
 
-        if (address) {
-          filteredServices = allServices.filter(
-            (service) =>
-              service.personalInfo?.city?.toLowerCase() ===
-                address.city.toLowerCase() ||
-              service.personalInfo?.region?.toLowerCase() ===
-                address.region.toLowerCase()
-          );
-        }
+        if (address?.city || address?.streetAddress) {
+          filteredServices = allServices.filter((service) => {
+            const serviceCity =
+              service.personalInfo?.city?.trim().toLowerCase() || "";
+            const serviceStreet =
+              service.personalInfo?.streetAddress?.trim().toLowerCase() || "";
 
+            const inputCity = address.city?.trim().toLowerCase() || "";
+            const inputStreet =
+              address.streetAddress?.trim().toLowerCase() || "";
+
+            // Match the city and street partially to make it more flexible
+            const cityMatch = serviceCity.includes(inputCity);
+            const streetMatch = serviceStreet.includes(inputStreet);
+
+            return cityMatch && streetMatch; // Service is included if both city and street match
+          });
+        }
+        console.log("Filtered Services:", filteredServices);
         setServices(filteredServices);
       } catch (error) {
         console.error("Failed to fetch services:", error);
@@ -66,9 +75,8 @@ export default function ServiceList({ userAddress }) {
                 rating={service.rating || 0} // assuming there's a rating field
                 tags={service.tags || []} // assuming tags is an array
                 price={service.price} // assuming price is in service data
-                isAvailable={service.isAvailable} // assuming availability flag
-                onBook={() => console.log("Book Now", service.id)}
-                onChat={() => console.log("Chat with", service.id)}
+                isAvailable={service.isAvailable}
+                pricingInfo={service.pricingInfo}
               />
             ))
           ) : (

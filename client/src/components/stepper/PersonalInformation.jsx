@@ -134,7 +134,7 @@ const PersonalInformationForm = ({ personalInfo, setPersonalInfo }) => {
             htmlFor="city"
             className="block text-sm font-medium text-gray-900"
           >
-            City
+            City / Municipality
           </label>
           <div className="mt-2">
             <input
