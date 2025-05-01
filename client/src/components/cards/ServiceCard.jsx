@@ -9,7 +9,7 @@ export default function ServiceCard({
   pricingInfo,
   isAvailable,
   onBook,
-  onChat,
+  onSeeProfile,
   businessName,
   businessPhoto,
 }) {
@@ -93,7 +93,16 @@ export default function ServiceCard({
 
         <div className="flex gap-2 w-full sm:w-auto">
           <Button
-            onClick={onChat}
+            onClick={() =>
+              onSeeProfile({
+                businessName,
+                businessPhoto,
+                title,
+                pricingInfo,
+                tags,
+                rating,
+              })
+            }
             text="See profile"
             variant="outline"
             className="flex-1 mr-0 sm:flex-none"

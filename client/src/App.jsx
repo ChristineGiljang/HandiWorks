@@ -8,6 +8,7 @@ import MultiStepForm from "./components/stepper/MultiStepForm";
 import ProLanding from "./pages/ProLanding";
 import ProDashboard from "./pages/ProDashboard";
 import ServiceList from "./layout/ServiceList";
+import CleanerProfile from "./layout/CleanerProfile";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/pro" element={<ProLanding />} />
         <Route path="/services" element={<ServiceList />} />
         <Route path="/pro/dashboard" element={<ProDashboard />} />
+        <Route path="/profile/:id" element={<CleanerProfile />} />
       </Routes>
     </Router>
   );
