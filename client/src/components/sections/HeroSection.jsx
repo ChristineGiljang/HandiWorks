@@ -1,14 +1,31 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuth } from "firebase/auth";
 import AddressModal from "../booking/AddressModal";
 import ServiceList from "../../layout/ServiceList";
 
 const HeroSection = () => {
   const [showModal, setShowModal] = useState(false);
   const [userAddress, setUserAddress] = useState(null);
+  const navigate = useNavigate();
+  const auth = getAuth();
+
+  const handleBookNow = () => {
+    const user = auth.currentUser;
+    console.log("✅ handleBookNow called. User:", user);
+
+    if (!user) {
+      console.log("🔐 Not logged in. Redirecting to /login");
+      navigate("/login");
+    } else {
+      console.log("✅ Logged in. Showing modal");
+      setShowModal(true);
+    }
+  };
 
   const handleAddressSubmit = (address) => {
     setUserAddress(address);
-    setShowModal(false); // close modal after submission
+    setShowModal(false);
     console.log("📍 Address captured:", address);
   };
 
@@ -28,7 +45,7 @@ const HeroSection = () => {
 
           <button
             type="button"
-            onClick={() => setShowModal(true)}
+            onClick={handleBookNow}
             className="text-white bg-green-700 hover:bg-green-800 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center"
           >
             Book Now

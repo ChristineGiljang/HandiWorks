@@ -1,15 +1,22 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../auth/firebase";
-import Button from "../components/ui/Button";
-import StarRating from "../components/cards/StarRating";
+import { db } from "../../auth/firebase";
+import Button from "../ui/Button";
+import BookingForm from "./BookingForm";
+import StarRating from "../cards/StarRating";
 
 export default function CleanerProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("about");
+  const tabs = [
+    { label: "About", value: "about" },
+    { label: "Photos", value: "photos" },
+    { label: "Reviews & Ratings", value: "reviews" },
+  ];
 
   useEffect(() => {
     const fetchService = async () => {
@@ -57,28 +64,48 @@ export default function CleanerProfile() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
-      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-        <img
-          src={businessInfo?.businessPhoto || "/default-business-photo.jpg"}
-          alt="Business"
-          className="w-24 h-24 rounded-full object-cover shadow"
-        />
-        <div className="flex-1">
-          <h1 className="text-3xl font-semibold mb-1">
-            {businessInfo?.businessName}
-          </h1>
-          <p className="text-gray-600 text-sm mb-2">
-            {personalInfo?.streetAddress}, {personalInfo?.city}
-          </p>
-          <div className="flex items-center gap-2 mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <img
+            src={businessInfo?.businessPhoto || "/default-business-photo.jpg"}
+            alt="Business"
+            className="w-20 h-20 rounded-full object-cover"
+          />
+          <div>
+            <h1 className="text-2xl font-semibold">
+              {businessInfo?.businessName}
+            </h1>
+            <div className="text-sm text-gray-500 mb-1">
+              {personalInfo?.city}, {personalInfo?.streetAddress}
+            </div>
             <StarRating rating={rating || 0} />
-            <span className="text-xs text-gray-500">({rating || 0})</span>
           </div>
         </div>
+        <BookingForm serviceId={service.id} clientId={currentUserId} />
+        <Button
+          text="Book Now"
+          variant="filledStyles"
+          className="w-full sm:w-auto"
+          onClick={() => alert("Booking...")}
+        />
       </div>
-
-      {/* 🔽 Line spans the full width below the whole header section */}
-      <hr className="border-t border-gray-200 my-4" />
+      <div className="mt-6">
+        <div className="flex gap-6 border-b">
+          {tabs.map((tab) => (
+            <button
+              key={tab.value}
+              className={`pb-2 border-b-2 transition-all duration-200 ${
+                activeTab === tab.value
+                  ? "border-green-500 text-green-600 font-medium"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+              onClick={() => setActiveTab(tab.value)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Business Description & Details */}
       <div className="space-y-4">
@@ -98,6 +125,9 @@ export default function CleanerProfile() {
             {businessInfo?.numCleaners
               ? `${businessInfo.numCleaners} cleaner(s)`
               : "N/A"}
+          </div>
+          <div>
+            <span className="font-medium text-gray-800">Hired: </span>0 times
           </div>
         </div>
 
@@ -145,15 +175,6 @@ export default function CleanerProfile() {
         ) : (
           <div className="text-gray-500 text-sm">No services listed.</div>
         )}
-      </div>
-
-      <div className="flex gap-4">
-        <Button text="Back" variant="outline" onClick={() => navigate(-1)} />
-        <Button
-          text="Book Now"
-          variant="filledStyles"
-          onClick={() => alert("Booking...")}
-        />
       </div>
     </div>
   );
