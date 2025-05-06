@@ -29,7 +29,7 @@ const HowItWorks = () => {
   return (
     <section id="how-it-works" className="max-w-6xl mx-auto px-4 py-32">
       <h2 className="text-2xl font-bold text-center mb-4">
-        How HandiWorks Works
+        How Handiworks Works
       </h2>
       <p className="text-lg text-gray-600 text-center mb-12">
         Book a trusted cleaning service in just a few steps.

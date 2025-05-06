@@ -1,37 +1,46 @@
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider, db } from "../auth/firebase";
-import { doc, getDoc, setDoc, enableNetwork } from "firebase/firestore";
+import { useState } from "react";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../auth/firebase"; // Adjust the import path as necessary
 
+const provider = new GoogleAuthProvider();
+
+/**
+ * Custom hook for handling Google login
+ * @returns {Function} Function to trigger Google login
+ */
 const useGoogleLogin = () => {
-  const login = async () => {
+  const [error, setError] = useState(null);
+
+  const googleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      await enableNetwork(db); // ensure Firestore is online
-
+      // Check if user exists in Firestore
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
 
+      // If user doesn't exist in our database, add them
       if (!userSnap.exists()) {
         await setDoc(userRef, {
-          uid: user.uid,
-          name: user.displayName,
           email: user.email,
-          photo: user.photoURL,
-          userType: "client",
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          userType: "client", // Default to client
+          createdAt: serverTimestamp(),
         });
       }
 
-      console.log("✅ Google Login Success:", user);
-      return { user, error: null };
+      return { user };
     } catch (error) {
-      console.error("❌ Google Login Error:", error.message);
-      return { user: null, error };
+      console.error("Google login error:", error);
+      setError(error);
+      return { error };
     }
   };
 
-  return login;
+  return googleLogin;
 };
 
 export default useGoogleLogin;

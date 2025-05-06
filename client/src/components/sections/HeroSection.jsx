@@ -39,7 +39,7 @@ const HeroSection = () => {
             Book Trusted Cleaners in Cebu – Instantly.
           </h1>
           <p className="text-lg text-black mb-8">
-            HandiWorks connects you with local professionals you can trust —
+            Handiworks connects you with local professionals you can trust —
             with just 1 click.
           </p>
 

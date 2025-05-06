@@ -2,18 +2,58 @@ import { useState } from "react";
 import Button from "../ui/Button";
 import useGoogleLogin from "../../hooks/useGoogleLogin";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth"; // 👈 import this
-import { auth } from "../../auth/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../../auth/firebase";
+import { useAuth } from "../../context/AuthContext"; // Import useAuth
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
-  const googleLogin = useGoogleLogin(); // ✅ your custom hook
-  const navigate = useNavigate(); // optional
+  const [loading, setLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const googleLogin = useGoogleLogin();
+  const navigate = useNavigate();
+  const { user } = useAuth(); // Use the auth context
+
+  // No need for onAuthStateChanged here - we'll use the context instead
+
+  const getUserType = async (userId) => {
+    try {
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const userType = userData?.userType || "client";
+        console.log("✅ User type:", userType);
+        return userType;
+      } else {
+        console.warn("⚠️ User document does not exist. Defaulting to 'client'");
+        return "client";
+      }
+    } catch (error) {
+      console.error("🔥 Error fetching user type:", error);
+      return "client";
+    }
+  };
+
+  const handleRedirect = (userType) => {
+    console.log("➡️ Redirecting user type:", userType);
+    if (userType === "pro") {
+      navigate("/pro");
+    } else {
+      navigate("/");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isProcessing) return; // Prevent multiple submissions
+
+    setLoading(true);
+    setIsProcessing(true);
 
     try {
       const userCredential = await signInWithEmailAndPassword(
@@ -21,21 +61,43 @@ const LoginForm = () => {
         email,
         password
       );
-      console.log("Logged in:", userCredential.user);
-      navigate("/pro");
+      const uid = userCredential.user.uid;
+      const userType = await getUserType(uid);
+      handleRedirect(userType);
     } catch (error) {
-      console.error("Login failed:", error.message);
+      console.error("❌ Login error:", error.message);
       alert("Login failed: " + error.message);
+    } finally {
+      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    const { user, error } = await googleLogin("client"); // 👈 optional userType
-    if (user) {
-      console.log("Logged in:", user);
-      navigate("/pro"); // or wherever you want to redirect
-    } else {
-      alert(error.message);
+  const handleGoogleLogin = async (e) => {
+    e.preventDefault();
+    if (isProcessing) return; // Prevent multiple clicks
+
+    setLoading(true);
+    setIsProcessing(true);
+
+    try {
+      // No need to sign out manually first - removed that code
+
+      const result = await googleLogin();
+
+      if (result && result.user) {
+        const userType = await getUserType(result.user.uid);
+        handleRedirect(userType);
+      } else if (result && result.error) {
+        console.error("❌ Google login error:", result.error);
+        alert("Google login error: " + result.error.message);
+      }
+    } catch (error) {
+      console.error("🔥 Google login error:", error);
+      alert("Login failed: " + (error.message || "Unknown error"));
+    } finally {
+      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -111,9 +173,10 @@ const LoginForm = () => {
 
               <Button
                 type="submit"
-                text="Submit"
+                text={loading ? "Logging in..." : "Submit"}
                 variant="filledStyles"
                 className="w-full py-3"
+                disabled={loading || isProcessing}
               />
 
               <div className="flex items-center gap-2 my-4">
@@ -126,17 +189,18 @@ const LoginForm = () => {
                 type="button"
                 onClick={handleGoogleLogin}
                 className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-medium py-2.5 rounded-lg hover:bg-gray-100 transition duration-200"
+                disabled={loading || isProcessing}
               >
                 <img
                   src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                   alt="Google Logo"
                   className="w-5 h-5"
                 />
-                Login with Google
+                {loading ? "Logging in..." : "Login with Google"}
               </button>
 
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Don’t have an account yet?{" "}
+                Don't have an account yet?{" "}
                 <a
                   href="/signup"
                   className="font-medium text-primary-600 hover:underline dark:text-primary-500"

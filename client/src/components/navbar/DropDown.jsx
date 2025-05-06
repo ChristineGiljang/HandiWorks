@@ -1,6 +1,21 @@
 import React from "react";
+import { getAuth, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
-const Dropdown = ({ isDropdownOpen }) => {
+const Dropdown = ({ isDropdownOpen, toggleDropdown, userData }) => {
+  const navigate = useNavigate();
+  const auth = getAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      toggleDropdown(); // Close the dropdown
+      navigate("/"); // Redirect to home page after sign out
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <div
       className={`${
@@ -10,44 +25,49 @@ const Dropdown = ({ isDropdownOpen }) => {
     >
       <div className="px-4 py-3">
         <span className="block text-sm text-gray-900 dark:text-white">
-          Bonnie Green
+          {userData?.displayName || "User"}
         </span>
         <span className="block text-sm text-gray-500 truncate dark:text-gray-400">
-          name@flowbite.com
+          {userData?.email || ""}
         </span>
       </div>
       <ul className="py-2" aria-labelledby="user-menu-button">
         <li>
           <a
-            href="#"
+            href="/profile"
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+            onClick={() => toggleDropdown()}
           >
             Profile
           </a>
         </li>
         <li>
           <a
-            href="#"
+            href="/settings"
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+            onClick={() => toggleDropdown()}
           >
             Settings
           </a>
         </li>
+        {userData?.userType === "pro" && (
+          <li>
+            <a
+              href="/earnings"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+              onClick={() => toggleDropdown()}
+            >
+              Earnings
+            </a>
+          </li>
+        )}
         <li>
-          <a
-            href="#"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-          >
-            Earnings
-          </a>
-        </li>
-        <li>
-          <a
-            href="#"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+          <button
+            className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+            onClick={handleSignOut}
           >
             Sign out
-          </a>
+          </button>
         </li>
       </ul>
     </div>

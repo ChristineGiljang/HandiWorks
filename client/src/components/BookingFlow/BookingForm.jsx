@@ -120,7 +120,7 @@ export default function BookingForm({ serviceId, clientId }) {
 
       <Button
         type="submit"
-        text={loading ? "Booking..." : "Confirm Booking"}
+        text={loading ? "Booking..." : "Book Now"}
         disabled={loading}
         variant="filledStyles"
         className="w-full"
