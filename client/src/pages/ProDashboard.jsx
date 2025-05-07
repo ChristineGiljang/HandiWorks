@@ -21,6 +21,18 @@ const ProDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [processingBooking, setProcessingBooking] = useState(null);
 
+  // State for editing functionality
+  const [isEditingBusinessInfo, setIsEditingBusinessInfo] = useState(false);
+  const [isEditingPricing, setIsEditingPricing] = useState(false);
+  const [businessInfo, setBusinessInfo] = useState({});
+  const [personalInfo, setPersonalInfo] = useState({});
+  const [pricingInfo, setPricingInfo] = useState({
+    mainServices: [],
+    addOns: [],
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [serviceId, setServiceId] = useState(null);
+
   const navigate = useNavigate();
 
   // 🔵 1st useEffect: redirect if no user
@@ -43,13 +55,25 @@ const ProDashboard = () => {
           const serviceSnapshot = await getDocs(serviceQuery);
 
           let serviceData = null;
-          let serviceId = null;
+          let fetchedServiceId = null;
 
           if (!serviceSnapshot.empty) {
             const doc = serviceSnapshot.docs[0];
-            serviceId = doc.id;
+            fetchedServiceId = doc.id;
             serviceData = doc.data();
             setService(serviceData);
+            setServiceId(fetchedServiceId);
+
+            // Initialize edit states
+            if (serviceData.businessInfo) {
+              setBusinessInfo(serviceData.businessInfo);
+            }
+            if (serviceData.personalInfo) {
+              setPersonalInfo(serviceData.personalInfo);
+            }
+            if (serviceData.pricingInfo) {
+              setPricingInfo(serviceData.pricingInfo);
+            }
           }
 
           // Fetch bookings for this specific cleaner
@@ -79,10 +103,10 @@ const ProDashboard = () => {
           });
 
           // Then, if we have a serviceId, query by serviceId as well
-          if (serviceId) {
+          if (fetchedServiceId) {
             const serviceBookingsQuery = query(
               collection(db, "bookings"),
-              where("serviceId", "==", serviceId)
+              where("serviceId", "==", fetchedServiceId)
             );
 
             const serviceBookingsSnapshot = await getDocs(serviceBookingsQuery);
@@ -178,6 +202,142 @@ const ProDashboard = () => {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(date);
+  };
+
+  // Business info editing functions
+  const handleBusinessInfoChange = (e) => {
+    const { name, value } = e.target;
+    setBusinessInfo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handlePersonalInfoChange = (e) => {
+    const { name, value } = e.target;
+    setPersonalInfo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Save business info changes
+  const saveBusinessInfo = async () => {
+    if (!serviceId || !user) return;
+
+    try {
+      setIsSaving(true);
+
+      // Reference to the service document
+      const serviceRef = doc(db, "services", serviceId);
+
+      // Update the business and personal info
+      await updateDoc(serviceRef, {
+        businessInfo,
+        personalInfo,
+      });
+
+      // Update local state
+      setService((prev) => ({
+        ...prev,
+        businessInfo,
+        personalInfo,
+      }));
+
+      // Exit edit mode
+      setIsEditingBusinessInfo(false);
+    } catch (error) {
+      console.error("Error saving business info:", error);
+      alert("Failed to save changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Pricing editing functions
+  const handleMainServiceChange = (index, field, value) => {
+    const updatedServices = [...pricingInfo.mainServices];
+    updatedServices[index] = {
+      ...updatedServices[index],
+      [field]: field === "price" ? parseFloat(value) : value,
+    };
+
+    setPricingInfo((prev) => ({
+      ...prev,
+      mainServices: updatedServices,
+    }));
+  };
+
+  const handleAddOnChange = (index, field, value) => {
+    const updatedAddOns = [...pricingInfo.addOns];
+    updatedAddOns[index] = {
+      ...updatedAddOns[index],
+      [field]: field === "price" ? parseFloat(value) : value,
+    };
+
+    setPricingInfo((prev) => ({
+      ...prev,
+      addOns: updatedAddOns,
+    }));
+  };
+
+  const addMainService = () => {
+    setPricingInfo((prev) => ({
+      ...prev,
+      mainServices: [...prev.mainServices, { name: "", price: 0 }],
+    }));
+  };
+
+  const addAddOn = () => {
+    setPricingInfo((prev) => ({
+      ...prev,
+      addOns: [...prev.addOns, { name: "", price: 0 }],
+    }));
+  };
+
+  const removeMainService = (index) => {
+    setPricingInfo((prev) => ({
+      ...prev,
+      mainServices: prev.mainServices.filter((_, i) => i !== index),
+    }));
+  };
+
+  const removeAddOn = (index) => {
+    setPricingInfo((prev) => ({
+      ...prev,
+      addOns: prev.addOns.filter((_, i) => i !== index),
+    }));
+  };
+
+  // Save pricing changes
+  const savePricingInfo = async () => {
+    if (!serviceId || !user) return;
+
+    try {
+      setIsSaving(true);
+
+      // Reference to the service document
+      const serviceRef = doc(db, "services", serviceId);
+
+      // Update the pricing info
+      await updateDoc(serviceRef, {
+        pricingInfo,
+      });
+
+      // Update local state
+      setService((prev) => ({
+        ...prev,
+        pricingInfo,
+      }));
+
+      // Exit edit mode
+      setIsEditingPricing(false);
+    } catch (error) {
+      console.error("Error saving pricing info:", error);
+      alert("Failed to save changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const completedBookings = bookings.filter((b) => b.status === "completed");
@@ -344,108 +504,366 @@ const ProDashboard = () => {
           )}
         </div>
 
+        {/* Business Info Section */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-10">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Your Business Info</h2>
-            <Button
-              text="Edit"
-              variant="outlineStyles"
-              onClick={() => navigate("/pro/setup")}
-            />
+            {isEditingBusinessInfo ? (
+              <div className="space-x-2">
+                <Button
+                  text="Cancel"
+                  variant="outlineStyles"
+                  onClick={() => {
+                    // Reset to original data
+                    setBusinessInfo(service?.businessInfo || {});
+                    setPersonalInfo(service?.personalInfo || {});
+                    setIsEditingBusinessInfo(false);
+                  }}
+                />
+                <Button
+                  text={isSaving ? "Saving..." : "Save Changes"}
+                  variant="primary"
+                  onClick={saveBusinessInfo}
+                  disabled={isSaving}
+                />
+              </div>
+            ) : (
+              <Button
+                text="Edit Info"
+                variant="outlineStyles"
+                onClick={() => setIsEditingBusinessInfo(true)}
+              />
+            )}
           </div>
 
           {service?.businessInfo && service?.personalInfo ? (
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <p>
-                  <span className="font-medium">Business Name:</span>{" "}
-                  {service.businessInfo.businessName}
-                </p>
-                <p>
-                  <span className="font-medium">Description:</span>{" "}
-                  {service.businessInfo.description}
-                </p>
-                <p>
-                  <span className="font-medium">Location:</span>{" "}
-                  {`${service.personalInfo.streetAddress}, ${service.personalInfo.city}, ${service.personalInfo.region}, ${service.personalInfo.postalCode}`}
-                </p>
-                <p>
-                  <span className="font-medium">Phone:</span>{" "}
-                  {service.personalInfo.phone}
-                </p>
-                <p>
-                  <span className="font-medium">Email:</span>{" "}
-                  {service.personalInfo.email}
-                </p>
-              </div>
-
-              {/* 🔵 Business Photos */}
-              {service.businessInfo.photos?.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-medium mb-2">Photos & Media</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {service.businessInfo.photos.map((photoUrl, idx) => (
-                      <img
-                        key={idx}
-                        src={photoUrl}
-                        alt={`Business Photo ${idx + 1}`}
-                        className="w-full h-32 object-cover rounded-md shadow-sm"
-                      />
-                    ))}
+            isEditingBusinessInfo ? (
+              <div className="space-y-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Business Name
+                    </label>
+                    <input
+                      type="text"
+                      name="businessName"
+                      value={businessInfo.businessName || ""}
+                      onChange={handleBusinessInfoChange}
+                      className="w-full px-3 py-2 border rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone
+                    </label>
+                    <input
+                      type="text"
+                      name="phone"
+                      value={personalInfo.phone || ""}
+                      onChange={handlePersonalInfoChange}
+                      className="w-full px-3 py-2 border rounded-md"
+                    />
                   </div>
                 </div>
-              )}
-            </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={businessInfo.description || ""}
+                    onChange={handleBusinessInfoChange}
+                    className="w-full px-3 py-2 border rounded-md h-24"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Street Address
+                    </label>
+                    <input
+                      type="text"
+                      name="streetAddress"
+                      value={personalInfo.streetAddress || ""}
+                      onChange={handlePersonalInfoChange}
+                      className="w-full px-3 py-2 border rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={personalInfo.city || ""}
+                      onChange={handlePersonalInfoChange}
+                      className="w-full px-3 py-2 border rounded-md"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Region
+                    </label>
+                    <input
+                      type="text"
+                      name="region"
+                      value={personalInfo.region || ""}
+                      onChange={handlePersonalInfoChange}
+                      className="w-full px-3 py-2 border rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Postal Code
+                    </label>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      value={personalInfo.postalCode || ""}
+                      onChange={handlePersonalInfoChange}
+                      className="w-full px-3 py-2 border rounded-md"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={personalInfo.email || ""}
+                    onChange={handlePersonalInfoChange}
+                    className="w-full px-3 py-2 border rounded-md"
+                  />
+                </div>
+
+                {/* Note: Photo upload functionality would require additional components */}
+                <p className="text-sm text-gray-500 mt-2">
+                  Note: To update your business photos, please go to the full
+                  setup page.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <p>
+                    <span className="font-medium">Business Name:</span>{" "}
+                    {service.businessInfo.businessName}
+                  </p>
+                  <p>
+                    <span className="font-medium">Description:</span>{" "}
+                    {service.businessInfo.description}
+                  </p>
+                  <p>
+                    <span className="font-medium">Location:</span>{" "}
+                    {`${service.personalInfo.streetAddress}, ${service.personalInfo.city}, ${service.personalInfo.region}, ${service.personalInfo.postalCode}`}
+                  </p>
+                  <p>
+                    <span className="font-medium">Phone:</span>{" "}
+                    {service.personalInfo.phone}
+                  </p>
+                  <p>
+                    <span className="font-medium">Email:</span>{" "}
+                    {service.personalInfo.email}
+                  </p>
+                </div>
+
+                {/* Business Photos */}
+                {service.businessInfo.photos?.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-medium mb-2">Photos & Media</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {service.businessInfo.photos.map((photoUrl, idx) => (
+                        <img
+                          key={idx}
+                          src={photoUrl}
+                          alt={`Business Photo ${idx + 1}`}
+                          className="w-full h-32 object-cover rounded-md shadow-sm"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
           ) : (
             <p>No business info found. Please complete your profile.</p>
           )}
         </div>
+
         {/* Pricing Info */}
         {service?.pricingInfo && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-10">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">Your Pricing</h2>
-              <Button
-                text="Edit"
-                variant="outlineStyles"
-                onClick={() => navigate("/pro/setup")}
-              />
+              {isEditingPricing ? (
+                <div className="space-x-2">
+                  <Button
+                    text="Cancel"
+                    variant="outlineStyles"
+                    onClick={() => {
+                      // Reset to original data
+                      setPricingInfo(
+                        service?.pricingInfo || {
+                          mainServices: [],
+                          addOns: [],
+                        }
+                      );
+                      setIsEditingPricing(false);
+                    }}
+                  />
+                  <Button
+                    text={isSaving ? "Saving..." : "Save Changes"}
+                    variant="primary"
+                    onClick={savePricingInfo}
+                    disabled={isSaving}
+                  />
+                </div>
+              ) : (
+                <Button
+                  text="Edit Pricing"
+                  variant="outlineStyles"
+                  onClick={() => setIsEditingPricing(true)}
+                />
+              )}
             </div>
 
             {/* Main Services */}
-            {service.pricingInfo.mainServices?.length > 0 && (
-              <div className="mt-4 mb-4">
-                <h3 className="text-lg font-medium mb-2">Main Services</h3>
-                <ul className="space-y-1">
-                  {service.pricingInfo.mainServices.map((service, idx) => (
-                    <li
-                      key={idx}
-                      className="flex justify-between border-b py-1"
-                    >
-                      <span>{service.name}</span>
-                      <span>₱{parseInt(service.price).toLocaleString()}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {isEditingPricing ? (
+              <div className="mt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-medium">Main Services</h3>
+                  <Button
+                    text="Add Service"
+                    variant="outlineStyles"
+                    size="sm"
+                    onClick={addMainService}
+                  />
+                </div>
 
-            {/* Add-ons */}
-            {service.pricingInfo.addOns?.length > 0 && (
-              <div>
-                <h3 className="text-lg font-medium mb-2">Add-ons</h3>
-                <ul className="space-y-1">
-                  {service.pricingInfo.addOns.map((addon, idx) => (
-                    <li
-                      key={idx}
-                      className="flex justify-between border-b py-1"
+                {pricingInfo.mainServices?.map((service, idx) => (
+                  <div key={idx} className="flex items-center gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={service.name}
+                      onChange={(e) =>
+                        handleMainServiceChange(idx, "name", e.target.value)
+                      }
+                      placeholder="Service name"
+                      className="flex-grow px-3 py-2 border rounded-md"
+                    />
+                    <div className="flex items-center">
+                      <span className="text-gray-500 mr-1">₱</span>
+                      <input
+                        type="number"
+                        value={service.price}
+                        onChange={(e) =>
+                          handleMainServiceChange(idx, "price", e.target.value)
+                        }
+                        placeholder="Price"
+                        className="w-24 px-3 py-2 border rounded-md"
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeMainService(idx)}
+                      className="p-2 text-red-500 hover:text-red-700"
                     >
-                      <span>{addon.name}</span>
-                      <span>₱{parseInt(addon.price).toLocaleString()}</span>
-                    </li>
-                  ))}
-                </ul>
+                      ✕
+                    </button>
+                  </div>
+                ))}
+
+                {/* Add-ons */}
+                <div className="flex justify-between items-center mt-6 mb-2">
+                  <h3 className="text-lg font-medium">Add-ons</h3>
+                  <Button
+                    text="Add Add-on"
+                    variant="outlineStyles"
+                    size="sm"
+                    onClick={addAddOn}
+                  />
+                </div>
+
+                {pricingInfo.addOns?.map((addon, idx) => (
+                  <div key={idx} className="flex items-center gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={addon.name}
+                      onChange={(e) =>
+                        handleAddOnChange(idx, "name", e.target.value)
+                      }
+                      placeholder="Add-on name"
+                      className="flex-grow px-3 py-2 border rounded-md"
+                    />
+                    <div className="flex items-center">
+                      <span className="text-gray-500 mr-1">₱</span>
+                      <input
+                        type="number"
+                        value={addon.price}
+                        onChange={(e) =>
+                          handleAddOnChange(idx, "price", e.target.value)
+                        }
+                        placeholder="Price"
+                        className="w-24 px-3 py-2 border rounded-md"
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeAddOn(idx)}
+                      className="p-2 text-red-500 hover:text-red-700"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
+            ) : (
+              <>
+                {/* Main Services display */}
+                {pricingInfo.mainServices?.length > 0 && (
+                  <div className="mt-4 mb-4">
+                    <h3 className="text-lg font-medium mb-2">Main Services</h3>
+                    <ul className="space-y-1">
+                      {pricingInfo.mainServices.map((service, idx) => (
+                        <li
+                          key={idx}
+                          className="flex justify-between border-b py-1"
+                        >
+                          <span>{service.name}</span>
+                          <span>
+                            ₱{parseInt(service.price).toLocaleString()}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Add-ons display */}
+                {pricingInfo.addOns?.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-medium mb-2">Add-ons</h3>
+                    <ul className="space-y-1">
+                      {pricingInfo.addOns.map((addon, idx) => (
+                        <li
+                          key={idx}
+                          className="flex justify-between border-b py-1"
+                        >
+                          <span>{addon.name}</span>
+                          <span>₱{parseInt(addon.price).toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
