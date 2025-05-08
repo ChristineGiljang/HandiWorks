@@ -16,6 +16,7 @@ import ServiceList from "./layout/ServiceList";
 import CleanerProfile from "./components/BookingFlow/CleanerProfile";
 import AddressModal from "./components/booking/AddressModal";
 import { useAuth } from "./context/AuthContext"; // Assuming you have an auth context
+import ForgotPassword from "./components/forms/ForgotPassword";
 
 // Improved PrivateRoute component
 const PrivateRoute = ({ children }) => {
@@ -44,6 +45,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/signup/pro" element={<ProSignUpForm />} />
         <Route path="/pro" element={<ProLanding />} />
         <Route path="/services" element={<ServiceList />} />
