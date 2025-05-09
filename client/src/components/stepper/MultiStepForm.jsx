@@ -6,7 +6,7 @@ import Button from "../ui/Button";
 import ServiceForm from "./ServiceForm";
 import PricingForm from "./PricingForm";
 import ReviewSection from "./ReviewSection";
-import axios from "axios"; // Import axios
+import axios from "axios";
 import { db, auth } from "../../auth/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +33,9 @@ const MultiStepForm = () => {
     numCleaners: "",
     yearsOfService: "",
     businessPhoto: null,
+    businessPhotoPreview: null,
     workPhotos: [],
+    workPhotosPreviews: [],
   });
 
   const [pricingData, setPricingData] = useState({
@@ -50,7 +52,7 @@ const MultiStepForm = () => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", "my-upload-preset"); // Replace with your upload preset
-    formData.append("cloud_name", import.meta.env.VITE_CLOUD_NAME); // Cloud name from .env (using import.meta.env)
+    formData.append("cloud_name", import.meta.env.VITE_CLOUD_NAME);
 
     try {
       const response = await axios.post(
@@ -59,7 +61,7 @@ const MultiStepForm = () => {
         }/image/upload`,
         formData
       );
-      return response.data.secure_url; // This is the URL of the uploaded image
+      return response.data.secure_url;
     } catch (error) {
       console.error("Error uploading image:", error);
       alert("Failed to upload image to Cloudinary.");
@@ -70,10 +72,12 @@ const MultiStepForm = () => {
   const handleSubmit = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
+
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) {
         alert("User not authenticated. Please log in again.");
+        setIsSubmitting(false);
         return;
       }
 
@@ -85,31 +89,67 @@ const MultiStepForm = () => {
 
       // Upload work photos
       let workPhotoURLs = [];
-      if (formData.workPhotos.length > 0) {
+      if (formData.workPhotos && formData.workPhotos.length > 0) {
         workPhotoURLs = await Promise.all(
           formData.workPhotos.map((photo) => uploadToCloudinary(photo))
         );
+        // Filter out any null values in case some uploads failed
+        workPhotoURLs = workPhotoURLs.filter((url) => url !== null);
       }
 
-      // Prepare the full form data
+      // Create a clean version of the business info without File objects
+      // Firestore cannot store File objects or functions
+      const cleanBusinessInfo = {
+        businessName: formData.businessName || "",
+        description: formData.description || "",
+        numCleaners: formData.numCleaners || "",
+        yearsOfService: formData.yearsOfService || "",
+        businessPhotoURL: businessPhotoURL,
+        workPhotoURLs: workPhotoURLs,
+      };
+
+      // Clean pricing data to ensure it's Firestore compatible
+      const cleanMainServices = pricingData.mainServices.map((service) => ({
+        serviceName: service.serviceName || "",
+        price: service.price || "",
+        serviceType: service.serviceType || "",
+        description: service.description || "",
+      }));
+
+      const cleanAddOns = pricingData.addOns.map((addon) => ({
+        addonName: addon.addonName || "",
+        price: addon.price || "",
+        description: addon.description || "",
+      }));
+
+      // Prepare the full form data with clean objects
       const formToSubmit = {
-        userId: currentUser.uid, // ✅ Attach the user's UID here
-        personalInfo,
-        businessInfo: {
-          ...formData,
-          businessPhoto: businessPhotoURL,
-          workPhotos: workPhotoURLs,
+        userId: currentUser.uid,
+        personalInfo: {
+          firstName: personalInfo.firstName || "",
+          lastName: personalInfo.lastName || "",
+          email: personalInfo.email || "",
+          phone: personalInfo.phone || "",
+          streetAddress: personalInfo.streetAddress || "",
+          city: personalInfo.city || "",
+          region: personalInfo.region || "",
+          postalCode: personalInfo.postalCode || "",
         },
-        pricingInfo: pricingData,
+        businessInfo: cleanBusinessInfo,
+        pricingInfo: {
+          mainServices: cleanMainServices,
+          addOns: cleanAddOns,
+        },
         createdAt: new Date(),
       };
 
       // Submit to Firestore
       await addDoc(collection(db, "services"), formToSubmit);
 
+      // Navigate to dashboard on success
       navigate("/pro/dashboard");
 
-      // Reset everything
+      // Reset form state
       setPersonalInfo({
         firstName: "",
         lastName: "",
@@ -126,7 +166,9 @@ const MultiStepForm = () => {
         numCleaners: "",
         yearsOfService: "",
         businessPhoto: null,
+        businessPhotoPreview: null,
         workPhotos: [],
+        workPhotosPreviews: [],
       });
       setPricingData({
         mainServices: [],
@@ -134,9 +176,12 @@ const MultiStepForm = () => {
       });
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("Failed to submit form. Please try again.");
+      alert(`Failed to submit form: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
     <>
       <NavBarLogo />

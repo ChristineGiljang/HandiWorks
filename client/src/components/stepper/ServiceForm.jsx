@@ -9,26 +9,60 @@ const ServiceForm = ({ formData, setFormData }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        businessPhoto: file, // Save the File
-        businessPhotoPreview: URL.createObjectURL(file), // Separate preview
-      }));
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFormData((prev) => ({
+          ...prev,
+          businessPhoto: file, // Save the File
+          businessPhotoPreview: reader.result, // Use FileReader for more reliable preview
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleWorkPhotosChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        workPhotos: [...(prev.workPhotos || []), ...files], // Save Files
-        workPhotosPreviews: [
-          ...(prev.workPhotosPreviews || []),
-          ...files.map((file) => URL.createObjectURL(file)),
-        ],
-      }));
+      // Process each file with FileReader
+      const fileReadPromises = files.map((file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve({ file, preview: reader.result });
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(fileReadPromises).then((results) => {
+        setFormData((prev) => ({
+          ...prev,
+          workPhotos: [
+            ...(prev.workPhotos || []),
+            ...files.map((file) => file),
+          ],
+          workPhotosPreviews: [
+            ...(prev.workPhotosPreviews || []),
+            ...results.map((result) => result.preview),
+          ],
+        }));
+      });
     }
+  };
+
+  const removeWorkPhoto = (index) => {
+    setFormData((prev) => {
+      const updatedPhotos = [...(prev.workPhotos || [])];
+      const updatedPreviews = [...(prev.workPhotosPreviews || [])];
+
+      updatedPhotos.splice(index, 1);
+      updatedPreviews.splice(index, 1);
+
+      return {
+        ...prev,
+        workPhotos: updatedPhotos,
+        workPhotosPreviews: updatedPreviews,
+      };
+    });
   };
 
   return (
@@ -133,7 +167,7 @@ const ServiceForm = ({ formData, setFormData }) => {
             Upload photo of yourself or your business
           </label>
           <div className="flex items-center gap-4">
-            <div className="w-28 h-24 rounded-full bg-gray-100 overflow-hidden border border-gray-300">
+            <div className="w-28 h-28 rounded-md bg-gray-100 overflow-hidden border border-gray-300">
               {formData.businessPhotoPreview ? (
                 <img
                   src={formData.businessPhotoPreview}
@@ -176,17 +210,24 @@ const ServiceForm = ({ formData, setFormData }) => {
               className="block w-full text-sm text-gray-900 file:mr-4 file:py-1.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
             />
           </div>
-          <div className="mt-4 grid grid-cols-4 gap-2">
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {(formData.workPhotosPreviews || []).map((src, index) => (
               <div
                 key={index}
-                className="w-24 h-24 rounded-md bg-gray-100 overflow-hidden border border-gray-300"
+                className="relative w-full h-24 rounded-md bg-gray-100 overflow-hidden border border-gray-300 group"
               >
                 <img
                   src={src}
-                  alt={`Preview ${index}`}
+                  alt={`Work preview ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
+                <button
+                  type="button"
+                  onClick={() => removeWorkPhoto(index)}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
               </div>
             ))}
           </div>

@@ -1,15 +1,12 @@
+import React from "react";
+
 const ReviewSection = ({
   personalInfo = {},
   businessInfo = {},
   mainServices = [],
   addOns = [],
 }) => {
-  console.log("ReviewSection Data:", {
-    personalInfo,
-    businessInfo,
-    mainServices,
-    addOns,
-  });
+  // Check if we have any data to display
   const hasPersonalInfo =
     personalInfo?.firstName ||
     personalInfo?.lastName ||
@@ -19,9 +16,9 @@ const ReviewSection = ({
 
   const hasBusinessInfo =
     businessInfo?.businessName ||
-    businessInfo?.businessPhoto ||
-    (Array.isArray(businessInfo?.workPhotos) &&
-      businessInfo.workPhotos.length > 0);
+    businessInfo?.businessPhotoPreview ||
+    (Array.isArray(businessInfo?.workPhotosPreviews) &&
+      businessInfo.workPhotosPreviews.length > 0);
 
   const hasServices = mainServices.length > 0 || addOns.length > 0;
 
@@ -32,12 +29,7 @@ const ReviewSection = ({
       </div>
     );
   }
-  console.log("ReviewSection props:", {
-    personalInfo,
-    businessInfo,
-    mainServices,
-    addOns,
-  });
+
   return (
     <div className="p-6 bg-gray-50 border rounded-md">
       <h2 className="text-lg font-bold mb-4 text-gray-800">
@@ -106,17 +98,36 @@ const ReviewSection = ({
             </p>
           )}
 
-          {Array.isArray(businessInfo?.workPhotos) &&
-            businessInfo.workPhotos.length > 0 && (
-              <div className="mt-6">
-                <h3 className="font-semibold text-gray-700">Work Photos</h3>
+          {/* Business Photo Preview */}
+          {businessInfo?.businessPhotoPreview && (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-gray-700">
+                Business Photo
+              </h4>
+              <div className="mt-2">
+                <img
+                  src={businessInfo.businessPhotoPreview}
+                  alt="Business"
+                  className="w-32 h-32 rounded-md object-cover border border-gray-200"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Work Photos Previews */}
+          {Array.isArray(businessInfo?.workPhotosPreviews) &&
+            businessInfo.workPhotosPreviews.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-gray-700">
+                  Work Photos
+                </h4>
                 <div className="flex gap-2 flex-wrap mt-2">
-                  {businessInfo.workPhotos.map((photo, idx) => (
+                  {businessInfo.workPhotosPreviews.map((photoSrc, idx) => (
                     <img
                       key={idx}
-                      src={photo}
+                      src={photoSrc}
                       alt={`Work ${idx + 1}`}
-                      className="w-24 h-24 rounded-md object-cover"
+                      className="w-24 h-24 rounded-md object-cover border border-gray-200"
                     />
                   ))}
                 </div>
@@ -134,9 +145,14 @@ const ReviewSection = ({
               <>
                 <p className="mt-2 font-medium">Main Services:</p>
                 <ul className="list-disc list-inside">
-                  {mainServices.map((s, i) => (
-                    <li key={i}>
-                      {s.name} — ₱{s.price}
+                  {mainServices.map((service, idx) => (
+                    <li key={idx}>
+                      {service.serviceName || service.name} — ₱{service.price}
+                      {service.description && (
+                        <span className="text-gray-500 ml-1 block pl-5 mt-1">
+                          {service.description}
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -147,9 +163,14 @@ const ReviewSection = ({
               <>
                 <p className="mt-2 font-medium">Add-ons:</p>
                 <ul className="list-disc list-inside">
-                  {addOns.map((s, i) => (
-                    <li key={i}>
-                      {s.name} — ₱{s.price}
+                  {addOns.map((addon, idx) => (
+                    <li key={idx}>
+                      {addon.addonName || addon.name} — ₱{addon.price}
+                      {addon.description && (
+                        <span className="text-gray-500 ml-1 block pl-5 mt-1">
+                          {addon.description}
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>

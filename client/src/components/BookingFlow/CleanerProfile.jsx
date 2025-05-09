@@ -86,7 +86,17 @@ export default function CleanerProfile() {
     );
   }
 
+  // Destructure the service object based on your data structure
   const { businessInfo, personalInfo, pricingInfo, rating, tags } = service;
+
+  // Scroll to section when tab is clicked
+  const scrollToSection = (sectionId) => {
+    setActiveTab(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <>
@@ -97,26 +107,33 @@ export default function CleanerProfile() {
             <div className="flex-1 space-y-6">
               {/* Header */}
               <div className="flex items-center gap-4">
-                <img
-                  src={
-                    businessInfo?.businessPhoto || "/default-business-photo.jpg"
-                  }
-                  alt="Business"
-                  className="w-20 h-20 rounded-full object-cover"
-                />
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <img
+                    src={
+                      businessInfo?.businessPhotoURL ||
+                      "/default-business-photo.jpg"
+                    }
+                    alt={businessInfo?.businessName || "Business"}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/default-business-photo.jpg";
+                    }}
+                  />
+                </div>
                 <div>
                   <h1 className="text-2xl font-semibold">
                     {businessInfo?.businessName}
                   </h1>
                   <div className="text-sm text-gray-500 mb-1">
-                    {personalInfo?.city}, {personalInfo?.streetAddress}
+                    {personalInfo?.city}, {personalInfo?.region}
                   </div>
                   <StarRating rating={rating || 0} />
                 </div>
               </div>
 
-              {/* Tabs */}
-              <div className="mt-4">
+              {/* Tabs - Now act as navigation */}
+              <div className="mt-4 sticky top-0 bg-white z-10 pt-2">
                 <div className="flex gap-6 border-b">
                   {tabs.map((tab) => (
                     <button
@@ -126,7 +143,7 @@ export default function CleanerProfile() {
                           ? "border-green-500 text-green-600 font-medium"
                           : "border-transparent text-gray-500 hover:text-gray-700"
                       }`}
-                      onClick={() => setActiveTab(tab.value)}
+                      onClick={() => scrollToSection(tab.value)}
                     >
                       {tab.label}
                     </button>
@@ -134,8 +151,9 @@ export default function CleanerProfile() {
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-4">
+              {/* About Section */}
+              <div id="about" className="pt-4 mt-4 space-y-4">
+                <h2 className="text-xl font-semibold">About</h2>
                 <p className="text-gray-700 text-base leading-relaxed">
                   {businessInfo?.description || "No description provided."}
                 </p>
@@ -160,25 +178,35 @@ export default function CleanerProfile() {
                     times
                   </div>
                 </div>
+              </div>
 
-                {/* Work Photos */}
-                {businessInfo?.workPhotos?.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold mt-6 mb-2">
-                      Work Photos
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {businessInfo.workPhotos.map((url, idx) => (
-                        <img
-                          key={idx}
-                          src={url}
-                          alt={`Work photo ${idx + 1}`}
-                          className="rounded-lg object-cover w-full h-32 sm:h-40"
-                        />
-                      ))}
-                    </div>
+              {/* Photos Section */}
+              <div id="photos" className="pt-6 mt-8">
+                <h2 className="text-xl font-semibold mb-3">Work Portfolio</h2>
+                {businessInfo?.workPhotoURLs?.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {businessInfo.workPhotoURLs.map((url, idx) => (
+                      <img
+                        key={idx}
+                        src={url}
+                        alt={`Work photo ${idx + 1}`}
+                        className="rounded-lg object-cover w-full h-32 sm:h-40"
+                      />
+                    ))}
                   </div>
+                ) : (
+                  <div className="text-gray-500">No work photos available.</div>
                 )}
+              </div>
+
+              {/* Reviews Section */}
+              <div id="reviews" className="pt-6 mt-8">
+                <h2 className="text-xl font-semibold mb-3">
+                  Reviews & Ratings
+                </h2>
+                <div className="py-4">
+                  <div className="text-gray-500 italic">No reviews yet.</div>
+                </div>
               </div>
 
               {/* Tags */}
@@ -197,12 +225,19 @@ export default function CleanerProfile() {
               {/* Services Offered */}
               <div>
                 <h2 className="text-xl font-semibold mb-2">Services Offered</h2>
-                {pricingInfo?.mainServices?.length ? (
+                {pricingInfo?.mainServices?.length > 0 ? (
                   <ul className="space-y-2">
                     {pricingInfo.mainServices.map((service, idx) => (
-                      <li key={idx} className="flex justify-between">
-                        <span>{service.name}</span>
-                        <span className="font-medium">₱{service.price}</span>
+                      <li
+                        key={idx}
+                        className="flex justify-between p-2 border-b border-gray-100"
+                      >
+                        <span>
+                          {service.serviceName || `Service ${idx + 1}`}
+                        </span>
+                        <span className="font-medium">
+                          ₱{service.price || 0}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -212,6 +247,24 @@ export default function CleanerProfile() {
                   </div>
                 )}
               </div>
+
+              {/* Add-ons */}
+              {pricingInfo?.addOns?.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">Add-ons</h2>
+                  <ul className="space-y-2">
+                    {pricingInfo.addOns.map((addon, idx) => (
+                      <li
+                        key={idx}
+                        className="flex justify-between p-2 border-b border-gray-100"
+                      >
+                        <span>{addon.addonName || `Add-on ${idx + 1}`}</span>
+                        <span className="font-medium">₱{addon.price || 0}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             {/* Booking Form Area */}
@@ -222,11 +275,12 @@ export default function CleanerProfile() {
                     <>
                       <Button
                         onClick={toggleBookingForm}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full"
-                        text="Book Now!"
-                      >
-                        {showBookingForm ? "Hide Booking Form" : "Book Now"}
-                      </Button>
+                        text={
+                          showBookingForm ? "Hide Booking Form" : "Book Now"
+                        }
+                        variant="filledStyles"
+                        className="w-full"
+                      />
                       {showBookingForm && (
                         <div className="mt-4 p-4 border border-gray-200 rounded shadow-sm">
                           <BookingForm
@@ -246,8 +300,16 @@ export default function CleanerProfile() {
                   )}
                 </>
               ) : (
-                <div className="text-red-500 text-sm">
-                  Please log in to book this service.
+                <div className="text-center p-4 border border-gray-200 rounded shadow-sm">
+                  <p className="text-red-500 mb-2">
+                    Please log in to book this service.
+                  </p>
+                  <Button
+                    onClick={() => navigate("/login")}
+                    text="Login"
+                    variant="filledStyles"
+                    className="w-full"
+                  />
                 </div>
               )}
             </div>

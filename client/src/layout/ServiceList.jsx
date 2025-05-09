@@ -55,8 +55,10 @@ export default function ServiceList({ userAddress }) {
     fetchServices();
   }, [userAddress]);
 
-  const handleSeeProfile = (service) => {
-    navigate(`/profile/${service.id}`);
+  const handleBookService = (serviceId) => {
+    // Implement booking logic or navigation
+    console.log("Booking service:", serviceId);
+    // navigate(`/book/${serviceId}`);
   };
 
   return (
@@ -71,15 +73,15 @@ export default function ServiceList({ userAddress }) {
             <ServiceCard
               key={service.id}
               businessName={service.businessInfo?.businessName}
-              businessPhoto={service.businessInfo?.businessPhoto}
-              image={service.businessPhoto}
-              title={service.businessInfo?.businessName}
+              businessPhoto={service.businessInfo?.businessPhotoURL} // Use businessPhotoURL instead of businessPhoto
+              title={service.businessInfo?.businessName || "Cleaning Service"}
               rating={service.rating || 0}
-              tags={service.tags || []}
-              isAvailable={service.isAvailable}
+              tags={service.tags || ["Cleaning"]}
+              isAvailable={service.isAvailable !== false} // Default to true if not specified
               pricingInfo={service.pricingInfo}
+              personalInfo={service.personalInfo} // Pass the entire personalInfo object
               onSeeProfile={() => navigate(`/profile/${service.id}`)}
-              onBook={() => console.log("Booking...")}
+              onBook={() => handleBookService(service.id)}
             />
           ))
         ) : (
